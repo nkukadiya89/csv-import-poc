@@ -37,6 +37,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     def upload_data_with_validation(self, request):
         """Upload data from CSV, with validation."""
         file_data = {}
+        
         file = request.FILES.get("file")
         if not file.name.endswith('.csv'):
             file_data["success"] = False
@@ -49,6 +50,11 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         serializer = self.serializer_class(data=data, many=True)
         serializer.is_valid(raise_exception=True)
+        
+        file_data["success"] = True
+        file_data["msg"] = "Data updated successfully"
+        file_data["data"] = serializer.data
+        
 
         product_list = []
         for row in serializer.data:
@@ -61,4 +67,4 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         Product.objects.bulk_create(product_list)
 
-        return Response("Successfully upload the data")
+        return Response(data=file_data, status=status.HTTP_200_OK)
